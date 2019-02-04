@@ -1,7 +1,7 @@
-##FOSDEM 2019 Go devroom
+## FOSDEM 2019 Go devroom
 
 
-####Librehost
+#### Librehost
 
 - network of Libre hosting providers
 - various models and implications - in an ethical way
@@ -40,7 +40,7 @@
 - There is nothing done towards fundraising right now but considering it
 - No physical servers yet, the network is where you should discus
 
-####State of Delve, a debugger for the Go programming language
+#### State of Delve, a debugger for the Go programming language
 
 - State of Delve - which changed in the last year, what changes have been added and what can you expect from the new features?
 - Highest impact areas where people can contribute in the future
@@ -234,7 +234,7 @@
 
 
 ### gRPC, Protobufs and Go
-####Machines talking to Machines
+#### Machines talking to Machines
 - New implementations of old ideas, i.e. JSON-RPC, REST...
 - Simple idea I want to invoke and action on a remote machine
 - gRPC usues HTTP/2, much better perfomance
@@ -282,6 +282,7 @@ message CreateVolumeRequest{
 
      service `lvm`[
      rpc Create Volume`8CreateVolumeRequest`0 returns (CreateVolumeResponse){}]
+     
      ```
 - Server is just standard Go, we take the Context which the gPRC stuff will take back and forth
 - The server is where LVM is installed so just executing it 
