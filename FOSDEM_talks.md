@@ -110,3 +110,182 @@
 - Functions can only be called on running goroutines that are not executing the runtime
 - The current goroutine needs to have at least 256 bytes of free space on the stack
 
+
+#### Designing Command-Line tools People Love
+
+- How to _design_ a CLI tool that is easy for people to use and people can contribute to 
+##### Design Goals
+- CLI that is predicable - if it's in a ecosystem you can guess what commands to use without the help text
+- Task oriented commands - make the task at hand easier for example making keypairs, turning it into one simple command
+- Friendly to both humans and scripts 
+- New contributor launchpad - always onboarding new contriubtors, since CLI tools are very popular, easy for people to get into 
+- It's a great place to get new contributors into your porject
+- Docker Version Manager, K8 Service Catalog, Porter (related to K8)
+##### Recommendations
+###### Command Design
+- If you commit code and someone starts learning and they're going to try and chang it
+- Pick a grammar, helm list etc
+- What's nice when you pick a grammar, it sounds like a sentence 
+- Anything that you can do to help people to learn these commands, will help get people to use your tool more
+- When you're selecting these nouns and verbs, you want to be consistent.
+- I.e. helm is not consistent, helm install vs helm remove - this will cause people trouble every single time they use the CLI tool 
+- Not figuring out the commands you have in the future
+- Figure out what you'll do next 
+###### Understand precedent in your ecosystem
+- svcat follows kubectl 
+- dvm followed nvm
+- dep doesn't follows glide, npm, etc.
+- You can't make changes because it will make people's lives harder if you're suggesting changes in an already established ecosystem
+- however if there's something spefic in the domain, you can add it, but don't change established commands
+- If it does the same things, use the same commands.
+- If it doesn't work the same way under the hood, don't use the same syntax!
+###### Let's design a CLI!
+- Reusing verbs that you already have
+- Being nice to scripts - parsing this in bash will suck and let people choose the output of your CLI
+###### Domain vs. Grammer
+- Use your judgement about the domain when breaking with the grammar
+- The command should tell you what the domain is 
+- Make tasks eaiser, don't simiply wrap an API!
+- Looks like a code gen client - it isn't enough!
+- Add that human layer to it and help people use it
+###### Frameworks
+- Cobra - Commands and Flags
+- Viper
+- Afero
+###### Cobra 
+- The code that matters is that we're instalizing a new Cobra command
+- Built on a bunch of different things 
+- Add in subcommands
+- Cobra takes over the main func 
+- If there's an error, it will handle it, printing out output
+###### Viper
+- useful for output format arugments
+- Viper can be given the first part of the file name and look for it in all the file formats
+- Loads it into memory and unmarshalls it into a stucture
+- Some people don't like the fact you can read in your config env from anywhere 
+- It means that anyone who uses your code needs Viper - weird dependices
+###### Afero
+- Replaces ioutil 
+- Super sutble 
+- Stops using hardcoded ioutil, you can mock it out and hit something else entirly. 
+- Can hit HTTP as well
+- Easy to swap out, useful for tests
+- How do we make this testable?
+###### Package structure
+- cmd/* is the wiring
+- This is where the main is, keep this tiny as possbile, can't be reused 
+- Anything in here can't be exported
+- pkg/* put packages here
+- Make functions that are 1:1 mapping the commands in your CLI
+- Create happy little packages for everything
+- Hide your band-adies and API wrappers in here
+- Can take one of your functions and reuse it
+- Makes testing a lot easier - one function with corrospending tests
+- Very few tests for the main packages, all the tests are in the other packages
+- One of the things that is very important is that the second packages, inject things like the console or filesystem etc.
+- Context is useful for mocking things out 
+- Use it like a CLI but through code
+
+### Go containers? Go serverless? A cloud native jounery
+#### The Monolith
+- How to modernise a monolith? Or how to make it cloud native
+##### Containerized microservices
+- First we step back a bit, k8 is the main backend of the system
+- Container lifecycle management
+- Focus on developing application 
+- Spilting up the monolith into several microservices - one for uploading the image and another to extract the metadata
+- Everything is stateless 
+- How do you break down the monolith
+- life and shift - put the monolith into a pod
+- both microservices as containers in one pod share data via local vloume
+- app containers in different pods, share data via persistent volumes
+##### Serverless
+- Really just an umberlla term for function as a service, databases and datasotries, object storeage, message queues, and query 
+- leave the whole operation part to something else 
+- event-driven (needs a trigger i.e. HTTP call)
+- short running 
+- stateless (externalize the state/intergrations)
+- Three lamnbda functions:
+- upload image, list images and metadata
+- metadata extraction
+- Using S3 as shared storage for images and metadata and static assests for UI
+- Leaverages cloud function
+##### Alternative serverless archittures 
+- trigger metadata extraction on s3:ObjectCreated etc
+- Containers and serverless: similar yet diffetent 
+- lift and shift isn't possible with serverless, need to re-artecht
+- local dev is limited with lambda
+##### The good
+- Containerzied microservices: K8 provices portablity
+- Servless: devs can focus on business logic
+- Both containers and serverless:
+- ratio of "code to config"
+##### The bad
+- containerized microservices:
+-  handling container images
+-  DX is poor 
+- serverless:
+-   lanaguage depended latencies
+-   state hydration 
+- how straightforward is auth? not a big problem, big problem was parsing the payload though the lamdba function
+- How do you ensure that everything runs? either you have a handful of functions or you're in a bad place
+- if you have a lot of functions, you need some kinds of orstraction, you need to write that yourself 
+- If you have a k8 cluster, it is perfectly possible to run SaaS frameworks on top of K8. 
+
+
+### gRPC, Protobufs and Go
+####Machines talking to Machines
+- New implementations of old ideas, i.e. JSON-RPC, REST...
+- Simple idea I want to invoke and action on a remote machine
+- gRPC usues HTTP/2, much better perfomance
+- gRPC should be considered
+#### Nice things about gPRC
+- Complete solution out of the box
+- Protobufs are hidden with gPRC
+- Advanced features - bidirectional streaming, flow control, blocking and unblocking
+- Build in a reverse proxy for REST 
+- Protocol biuffers - lightweight and fast
+#### Distills down to 3 steps
+- Create your Interface Definition (proto file)
+- Implement the Server
+- Implement the Client
+- And implement the API....
+- It's easy to build a gPRC service
+- Build our own SAN Storage Device 
+- LVM and loopback devices and put it on a server
+- iSCSI target and initiator 
+#### Step 1 - define your interface
+#### Step 2 - define your client
+#### Step 3 - implement a client
+- Make sure you're in your GOPATH
+- proto file is like the nuts and bolts 
+- The first thing we want to define is the message 
+```
+syntax = "proto3"
+package lvm
+
+message Volume {
+   string name = 1;
+   }
+
+message CreateVolumeRequest{
+      string name = 1;
+      string volumeGroup = 2;
+      string pool = 3;
+      uint64 size = 4;
+      }
+      
+
+ message CreateVolumeResponse{
+     string message = 1;
+     }
+
+     service `lvm`[
+     rpc Create Volume`8CreateVolumeRequest`0 returns (CreateVolumeResponse){}]
+     ```
+- Server is just standard Go, we take the Context which the gPRC stuff will take back and forth
+- The server is where LVM is installed so just executing it 
+- Setting up the server with gPRC is simple 
+- We need a client, just put the calls to our client, and wire in the IP address of the server
+
+
